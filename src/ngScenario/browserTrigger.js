@@ -119,10 +119,10 @@
         evnt.ctlKey = pressed('ctrl');
         evnt.altKey = pressed('alt');
         evnt.shiftKey = pressed('shift');
+        evnt.returnValue = false;
         element.fireEvent('on'+eventType, evnt);
+        finalProcessDefault = true;
       }
-
-
 
       return finalProcessDefault;
     }
