@@ -133,15 +133,13 @@ describe("ngAnimate", function() {
 
         expect(element.contents().length).toBe(0);
         $animate.enter(child, element);
-        $timeout.flushNext(0);
+        $rootScope.$digest();
 
         if($sniffer.transitions) {
           expect(child.hasClass('ng-enter')).toBe(true);
-          $timeout.flushNext(0);
           expect(child.hasClass('ng-enter-active')).toBe(true);
-          $timeout.flushNext(1000);
+          $timeout.flush();
         }
-        $timeout.flush();
 
         expect(element.contents().length).toBe(1);
       }));
@@ -151,13 +149,13 @@ describe("ngAnimate", function() {
 
         expect(element.contents().length).toBe(1);
         $animate.leave(child);
+        $rootScope.$digest();
+
         if($sniffer.transitions) {
           expect(child.hasClass('ng-leave')).toBe(true);
-          $timeout.flushNext(0);
           expect(child.hasClass('ng-leave-active')).toBe(true);
-          $timeout.flushNext(1000);
+          $timeout.flush();
         }
-        $timeout.flush();
 
         expect(element.contents().length).toBe(0);
       }));
@@ -174,6 +172,7 @@ describe("ngAnimate", function() {
         element.append(child2);
         expect(element.text()).toBe('12');
         $animate.move(child1, element, child2);
+        $rootScope.$digest();
         expect(element.text()).toBe('21');
       }));
 
@@ -186,9 +185,8 @@ describe("ngAnimate", function() {
         $animate.removeClass(child, 'ng-hide');
         if($sniffer.transitions) {
           expect(child.hasClass('ng-hide-remove')).toBe(true);
-          $timeout.flushNext(0);
           expect(child.hasClass('ng-hide-remove-active')).toBe(true);
-          $timeout.flushNext(1000);
+          $timeout.flush();
         }
         expect(child.hasClass('ng-hide-remove')).toBe(false);
         expect(child.hasClass('ng-hide-remove-active')).toBe(false);
@@ -203,11 +201,9 @@ describe("ngAnimate", function() {
         $animate.addClass(child, 'ng-hide');
         if($sniffer.transitions) {
           expect(child.hasClass('ng-hide-add')).toBe(true);
-          $timeout.flushNext(0);
           expect(child.hasClass('ng-hide-add-active')).toBe(true);
-          $timeout.flushNext(1000);
+          $timeout.flush();
         }
-        $timeout.flush();
         expect(child).toBeHidden();
       }));
 
@@ -221,46 +217,39 @@ describe("ngAnimate", function() {
 
         //enter
         $animate.enter(child, element);
-        $timeout.flushNext(0);
+        $rootScope.$digest();
+
         expect(child.attr('class')).toContain('ng-enter');
-        $timeout.flushNext(0);
         expect(child.attr('class')).toContain('ng-enter-active');
         $timeout.flushNext(1000);
-        $timeout.flushNext(0);
 
         //move
         element.append(after);
         $animate.move(child, element, after);
-        $timeout.flushNext(0);
+        $rootScope.$digest();
+
         expect(child.attr('class')).toContain('ng-move');
-        $timeout.flushNext(0);
         expect(child.attr('class')).toContain('ng-move-active');
         $timeout.flushNext(1000);
-        $timeout.flushNext(0);
 
         //hide
         $animate.addClass(child, 'ng-hide');
         expect(child.attr('class')).toContain('ng-hide-add');
-        $timeout.flushNext(0);
         expect(child.attr('class')).toContain('ng-hide-add-active');
         $timeout.flushNext(1000);
-        $timeout.flushNext(0);
 
         //show
         $animate.removeClass(child, 'ng-hide');
         expect(child.attr('class')).toContain('ng-hide-remove');
-        $timeout.flushNext(0);
         expect(child.attr('class')).toContain('ng-hide-remove-active');
         $timeout.flushNext(1000);
-        $timeout.flushNext(0);
 
         //leave
         $animate.leave(child);
+        $rootScope.$digest();
         expect(child.attr('class')).toContain('ng-leave');
-        $timeout.flushNext(0);
         expect(child.attr('class')).toContain('ng-leave-active');
         $timeout.flushNext(1000);
-        $timeout.flushNext(0);
       }));
 
       it("should not run if animations are disabled",
@@ -276,12 +265,10 @@ describe("ngAnimate", function() {
         expect(element.text()).toBe('123');
         $animate.removeClass(element, 'ng-hide');
         expect(element.text()).toBe('123');
-        $timeout.flushNext(0); //fires the addClass callback
 
         $animate.enabled(true);
 
         $animate.removeClass(element, 'ng-hide');
-        $timeout.flushNext(0);
         expect(element.text()).toBe('memento');
       }));
 
@@ -296,23 +283,20 @@ describe("ngAnimate", function() {
         expect(child).toBeShown();
 
         $animate.leave(child);
+        $rootScope.$digest();
         expect(child).toBeHidden(); //hides instantly
 
         //lets change this to prove that done doesn't fire anymore for the previous hide() operation
         child.css('display','block');
         child.removeClass('ng-hide');
 
-        $timeout.flushNext(0);
         if($sniffer.transitions) {
-          $timeout.flushNext(0);
-          $timeout.flushNext(0);
           expect(element.children().length).toBe(1); //still animating
           $timeout.flushNext(1000);
           $timeout.flushNext(1000);
         }
         $timeout.flushNext(2000);
         $timeout.flushNext(2000);
-        $timeout.flushNext(0);
         expect(child).toBeShown();
 
         expect(element.children().length).toBe(0);
@@ -326,7 +310,6 @@ describe("ngAnimate", function() {
         child.addClass('custom-delay ng-hide');
         $animate.removeClass(child, 'ng-hide');
         if($sniffer.transitions) {
-          $timeout.flushNext(0);
           $timeout.flushNext(1000);
         }
         $timeout.flushNext(2000);
@@ -371,7 +354,6 @@ describe("ngAnimate", function() {
           $animate.addClass(element, 'custom-delay custom-long-delay');
           $timeout.flushNext(2000);
           $timeout.flushNext(20000);
-          $timeout.flushNext(0);
           expect(element.hasClass('custom-delay')).toBe(true);
           expect(element.hasClass('custom-long-delay')).toBe(true);
       }));
@@ -392,12 +374,10 @@ describe("ngAnimate", function() {
         $animate.removeClass(element, 'ng-hide');
 
         if($sniffer.transitions) {
-          $timeout.flushNext(0);
           $timeout.flushNext(1000);
         }
         $timeout.flushNext(2000);
         $timeout.flushNext(20000);
-        $timeout.flushNext(0);
 
         expect(element.hasClass('custom-delay')).toBe(true);
         expect(element.hasClass('custom-delay-add')).toBe(false);
@@ -437,7 +417,6 @@ describe("ngAnimate", function() {
 
           $animate.removeClass(element, 'ng-hide');
           if ($sniffer.animations) {
-            $timeout.flushNext(0);
             $timeout.flushNext(4000);
           }
           expect(element).toBeShown();
@@ -461,7 +440,6 @@ describe("ngAnimate", function() {
 
           $animate.removeClass(element, 'ng-hide');
           if ($sniffer.animations) {
-            $timeout.flushNext(0);
             $timeout.flushNext(6000);
           }
           expect(element).toBeShown();
@@ -485,7 +463,6 @@ describe("ngAnimate", function() {
 
           $animate.removeClass(element, 'ng-hide');
           if ($sniffer.animations) {
-            $timeout.flushNext(0);
             $timeout.flushNext(2000);
           }
           expect(element).toBeShown();
@@ -511,7 +488,6 @@ describe("ngAnimate", function() {
 
           $animate.removeClass(element, 'ng-hide');
           if ($sniffer.transitions) {
-            $timeout.flushNext(0);
             $timeout.flushNext(20000);
           }
           expect(element).toBeShown();
@@ -548,18 +524,15 @@ describe("ngAnimate", function() {
             $animate.removeClass(element, 'ng-hide');
             if($sniffer.animations) {
               expect(element.hasClass('ng-hide-remove')).toBe(true);
-              $timeout.flushNext(0);
               expect(element.hasClass('ng-hide-remove-active')).toBe(true);
             }
 
             $animate.addClass(element, 'ng-hide');
             expect(element.hasClass('ng-hide-remove')).toBe(false); //added right away
 
-            $timeout.flushNext(0);
 
             if($sniffer.animations) { //cleanup some pending animations
               expect(element.hasClass('ng-hide-add')).toBe(true);
-              $timeout.flushNext(0);
               expect(element.hasClass('ng-hide-add-active')).toBe(true);
               $timeout.flushNext(2000);
             }
@@ -584,8 +557,7 @@ describe("ngAnimate", function() {
           element.addClass('ng-hide');
           expect(element).toBeHidden();
           $animate.removeClass(element, 'ng-hide');
-          $timeout.flushNext(0);
-          $timeout.flushNext(0);
+          $timeout.flush();
           expect(element).toBeShown();
 
           $animate.enabled(true);
@@ -595,10 +567,8 @@ describe("ngAnimate", function() {
 
           $animate.removeClass(element, 'ng-hide');
           if ($sniffer.transitions) {
-            $timeout.flushNext(0);
             $timeout.flushNext(1000);
           }
-          $timeout.flushNext(0);
           expect(element).toBeShown();
         }));
 
@@ -618,10 +588,8 @@ describe("ngAnimate", function() {
             $animate.removeClass(element, 'ng-hide');
             if ($sniffer.transitions) {
               expect(element).toBeHidden();
-              $timeout.flushNext(0);
               $timeout.flushNext(2000);
             }
-            $timeout.flush();
             expect(element).toBeShown();
           }));
 
@@ -643,9 +611,7 @@ describe("ngAnimate", function() {
             element.addClass('ng-hide');
             $animate.removeClass(element, 'ng-hide');
             $timeout.flushNext(0);
-            $timeout.flushNext(0);
             expect(element).toBeShown();
-
             $animate.enabled(true);
 
             element.addClass('ng-hide');
@@ -653,10 +619,8 @@ describe("ngAnimate", function() {
 
             $animate.removeClass(element, 'ng-hide');
             if ($sniffer.transitions) {
-              $timeout.flushNext(0);
               $timeout.flushNext(3000);
             }
-            $timeout.flush();
             expect(element).toBeShown();
         }));
 
@@ -677,7 +641,6 @@ describe("ngAnimate", function() {
 
             $animate.removeClass(element, 'ng-hide');
             if ($sniffer.transitions) {
-              $timeout.flushNext(0);
               $timeout.flushNext(11000);
             }
             expect(element).toBeShown();
@@ -697,11 +660,9 @@ describe("ngAnimate", function() {
             $animate.removeClass(element, 'ng-hide');
             if($sniffer.transitions) {
               expect(element.hasClass('ng-hide-remove')).toBe(true);
-              $timeout.flushNext(0);
               expect(element.hasClass('ng-hide-remove-active')).toBe(true);
               $timeout.flushNext(1000);
             }
-            $timeout.flushNext(0);
             expect(element.hasClass('ng-hide-remove')).toBe(false);
             expect(element.hasClass('ng-hide-remove-active')).toBe(false);
             expect(element).toBeShown();
@@ -709,7 +670,6 @@ describe("ngAnimate", function() {
             $animate.addClass(element, 'ng-hide');
             if($sniffer.transitions) {
               expect(element.hasClass('ng-hide-add')).toBe(true);
-              $timeout.flushNext(0);
               expect(element.hasClass('ng-hide-add-active')).toBe(true);
             }
         }));
@@ -732,28 +692,24 @@ describe("ngAnimate", function() {
 
         element[0].className = 'abc';
         $animate.enter(element, parent);
-        $timeout.flushNext(0);
+        $rootScope.$digest();
 
         if ($sniffer.transitions) {
           expect(element.hasClass('abc ng-enter')).toBe(true);
-          $timeout.flushNext(0);
           expect(element.hasClass('abc ng-enter ng-enter-active')).toBe(true);
           $timeout.flushNext(22000);
         }
-        $timeout.flushNext(0);
         expect(element.hasClass('abc')).toBe(true);
 
         element[0].className = 'xyz';
         $animate.enter(element, parent);
-        $timeout.flushNext(0);
+        $rootScope.$digest();
 
         if ($sniffer.transitions) {
           expect(element.hasClass('xyz')).toBe(true);
-          $timeout.flushNext(0);
           expect(element.hasClass('xyz ng-enter ng-enter-active')).toBe(true);
           $timeout.flushNext(22000);
         }
-        $timeout.flushNext(0);
         expect(element.hasClass('xyz')).toBe(true);
       }));
 
@@ -773,10 +729,9 @@ describe("ngAnimate", function() {
         element.attr('class','one two');
 
         $animate.enter(element, parent);
-        $timeout.flushNext(0);
+        $rootScope.$digest();
         if($sniffer.transitions) {
           expect(element.hasClass('one two ng-enter')).toBe(true);
-          $timeout.flushNext(0);
           expect(element.hasClass('one two ng-enter ng-enter-active')).toBe(true);
           expect(element.hasClass('one-active')).toBe(false);
           expect(element.hasClass('two-active')).toBe(false);
@@ -824,9 +779,9 @@ describe("ngAnimate", function() {
         $animate.enter(element, parent, null, function() {
           flag = true;
         });
+        $rootScope.$digest();
 
-        $timeout.flushNext(0); //move operation callback
-        $timeout.flushNext(0); //ngAnimate callback
+        $timeout.flush();
 
         expect(flag).toBe(true);
       }));
@@ -843,8 +798,10 @@ describe("ngAnimate", function() {
         $animate.leave(element, function() {
           flag = true;
         });
+        $rootScope.$digest();
 
-        $timeout.flushNext(0);
+        $timeout.flush();
+
         expect(flag).toBe(true);
       }));
 
@@ -861,9 +818,9 @@ describe("ngAnimate", function() {
         $animate.move(element, parent, parent2, function() {
           flag = true;
         });
+        $rootScope.$digest();
 
-        $timeout.flushNext(0); //move operation callback
-        $timeout.flushNext(0); //ngAnimate callback
+        $timeout.flush();
 
         expect(flag).toBe(true);
         expect(element.parent().id).toBe(parent2.id);
@@ -881,13 +838,13 @@ describe("ngAnimate", function() {
         $animate.addClass(element, 'on', function() {
           signature += 'A';
         });
-        $timeout.flushNext(0);
 
         $animate.removeClass(element, 'on', function() {
           signature += 'B';
         });
 
-        $timeout.flushNext(0);
+        $timeout.flush();
+
         expect(signature).toBe('AB');
       }));
 
@@ -904,8 +861,7 @@ describe("ngAnimate", function() {
           flag = true;
         });
 
-        var timeoutDelay = $sniffer.transitions ? 1 : 0;
-        $timeout.flush(timeoutDelay);
+        $timeout.flush();
         expect(flag).toBe(true);
       }));
 
@@ -927,11 +883,7 @@ describe("ngAnimate", function() {
           flag = true;
         });
 
-        if($sniffer.transitions) {
-          $timeout.flushNext(0);
-          $timeout.flushNext(1000);
-        }
-        $timeout.flushNext(0);
+        $timeout.flush();
         expect(flag).toBe(true);
       }));
 
@@ -949,8 +901,7 @@ describe("ngAnimate", function() {
           flag = true;
         });
 
-        $timeout.flushNext(2000);
-        $timeout.flushNext(0);
+        $timeout.flush();
         expect(flag).toBe(true);
       }));
 
@@ -975,19 +926,7 @@ describe("ngAnimate", function() {
           signature += 'B';
         });
 
-        if($sniffer.transitions) {
-          $timeout.flushNext(0); //callback for removeClass
-          $timeout.flushNext(0);
-          $timeout.flushNext(0);
-          $timeout.flushNext(9000);
-          $timeout.flushNext(9000);
-          $timeout.flushNext(0);
-        }
         $animate.addClass(element, 'ng-hide'); //earlier animation cancelled
-        if($sniffer.transitions) {
-          $timeout.flushNext(0);
-          $timeout.flushNext(9000);
-        }
         $timeout.flush();
         expect(signature).toBe('AB');
       }));
@@ -1023,12 +962,10 @@ describe("ngAnimate", function() {
         var element = jqLite(parent.find('span'));
 
         $animate.addClass(element,'klass');
-        $timeout.flushNext(0);
 
         expect(element.hasClass('klass')).toBe(true);
 
         $animate.removeClass(element,'klass');
-        $timeout.flushNext(0);
 
         expect(element.hasClass('klass')).toBe(false);
         expect(element.hasClass('klass-remove')).toBe(false);
@@ -1049,16 +986,14 @@ describe("ngAnimate", function() {
           signature += 'A';
         });
 
-        $timeout.flushNext(0);
         expect(element.hasClass('klass')).toBe(true);
 
         $animate.removeClass(element,'klass', function() {
           signature += 'B';
         });
 
-        $timeout.flushNext(0);
+        $timeout.flush();
         expect(element.hasClass('klass')).toBe(false);
-
         expect(signature).toBe('AB');
       }));
 
@@ -1083,11 +1018,9 @@ describe("ngAnimate", function() {
         if($sniffer.transitions) {
           expect(element.hasClass('klass')).toBe(false);
           expect(element.hasClass('klass-add')).toBe(true);
-          $timeout.flushNext(0);
           expect(element.hasClass('klass-add-active')).toBe(true);
           $timeout.flushNext(3000);
         }
-        $timeout.flushNext(0);
 
         //this cancels out the older animation
         $animate.removeClass(element,'klass', function() {
@@ -1099,7 +1032,6 @@ describe("ngAnimate", function() {
           expect(element.hasClass('klass-add')).toBe(false);
           expect(element.hasClass('klass-add-active')).toBe(false);
 
-          $timeout.flushNext(0);
           expect(element.hasClass('klass-remove')).toBe(true);
         }
         $timeout.flush();
@@ -1122,8 +1054,7 @@ describe("ngAnimate", function() {
           signature += 'X';
         });
 
-        $timeout.flushNext(500);
-        $timeout.flushNext(0);
+        $timeout.flush(500);
 
         expect(element.hasClass('klassy')).toBe(true);
 
@@ -1131,8 +1062,7 @@ describe("ngAnimate", function() {
           signature += 'Y';
         });
 
-        $timeout.flushNext(3000);
-        $timeout.flushNext(0);
+        $timeout.flush(3000);
 
         expect(element.hasClass('klassy')).toBe(false);
 
@@ -1159,14 +1089,13 @@ describe("ngAnimate", function() {
         });
         if($sniffer.transitions) {
           expect(element.hasClass('klass-add')).toBe(true);
-          $timeout.flushNext(0);
           expect(element.hasClass('klass-add-active')).toBe(true);
           $timeout.flushNext(11000);
           expect(element.hasClass('klass-add')).toBe(false);
           expect(element.hasClass('klass-add-active')).toBe(false);
         }
 
-        $timeout.flushNext(0);
+        $timeout.flush();
         expect(element.hasClass('klass')).toBe(true);
 
         $animate.removeClass(element,'klass', function() {
@@ -1174,14 +1103,13 @@ describe("ngAnimate", function() {
         });
         if($sniffer.transitions) {
           expect(element.hasClass('klass-remove')).toBe(true);
-          $timeout.flushNext(0);
           expect(element.hasClass('klass-remove-active')).toBe(true);
           $timeout.flushNext(11000);
           expect(element.hasClass('klass-remove')).toBe(false);
           expect(element.hasClass('klass-remove-active')).toBe(false);
         }
 
-        $timeout.flushNext(0);
+        $timeout.flush();
         expect(element.hasClass('klass')).toBe(false);
 
         expect(signature).toBe('db');
@@ -1208,7 +1136,6 @@ describe("ngAnimate", function() {
         if($sniffer.transitions) {
           expect(element.hasClass('one-add')).toBe(true);
           expect(element.hasClass('two-add')).toBe(true);
-          $timeout.flushNext(0);
 
           expect(element.hasClass('one-add-active')).toBe(true);
           expect(element.hasClass('two-add-active')).toBe(true);
@@ -1219,7 +1146,8 @@ describe("ngAnimate", function() {
           expect(element.hasClass('two-add')).toBe(false);
           expect(element.hasClass('two-add-active')).toBe(false);
         }
-        $timeout.flushNext(0);
+
+        $timeout.flush();
 
         expect(element.hasClass('one')).toBe(true);
         expect(element.hasClass('two')).toBe(true);
@@ -1228,7 +1156,7 @@ describe("ngAnimate", function() {
       }));
 
       it("should allow for multiple css classes to be animated plus a callback when removed",
-        inject(function($animate, $rootScope, $sniffer, $rootElement, $timeout) {
+        inject(function($animate, $rootScope, $sniffer, $rootElement, $timeout, filterFilter) {
 
         ss.addRule('.one-remove', 'transition:9s linear all;' +
                    vendorPrefix + 'transition:9s linear all');
@@ -1252,7 +1180,6 @@ describe("ngAnimate", function() {
         if($sniffer.transitions) {
           expect(element.hasClass('one-remove')).toBe(true);
           expect(element.hasClass('two-remove')).toBe(true);
-          $timeout.flushNext(0);
 
           expect(element.hasClass('one-remove-active')).toBe(true);
           expect(element.hasClass('two-remove-active')).toBe(true);
@@ -1263,7 +1190,8 @@ describe("ngAnimate", function() {
           expect(element.hasClass('two-remove')).toBe(false);
           expect(element.hasClass('two-remove-active')).toBe(false);
         }
-        $timeout.flushNext(0);
+
+        $timeout.flush();
 
         expect(element.hasClass('one')).toBe(false);
         expect(element.hasClass('two')).toBe(false);
@@ -1300,11 +1228,10 @@ describe("ngAnimate", function() {
     var child = $compile('<div>...</div>')($rootScope);
 
     $animate.enter(child, element);
-    $timeout.flushNext(0);
+    $rootScope.$digest();
 
     if($sniffer.transitions) {
       expect(child.hasClass('ng-enter')).toBe(true);
-      $timeout.flushNext(0);
       expect(child.hasClass('ng-enter-active')).toBe(true);
       $timeout.flushNext(1000);
     }
@@ -1323,11 +1250,10 @@ describe("ngAnimate", function() {
     var child = $compile('<div>...</div>')($rootScope);
 
     $animate.enter(child, element);
-    $timeout.flushNext(0);
+    $rootScope.$digest();
 
     if($sniffer.transitions) {
       expect(child.hasClass('ng-enter')).toBe(true);
-      $timeout.flushNext(0);
       expect(child.hasClass('ng-enter-active')).toBe(true);
       $timeout.flushNext(9000);
     }
@@ -1349,6 +1275,7 @@ describe("ngAnimate", function() {
 
     expect(child.hasClass('ng-enter')).toBe(false);
     $animate.enter(child, element);
+    $rootScope.$digest();
     expect(child.hasClass('ng-enter')).toBe(false);
   }));
 
@@ -1375,21 +1302,12 @@ describe("ngAnimate", function() {
 
       child.addClass('custom');
       $animate.enter(child, element);
-      $timeout.flushNext(0);
-
-      if($sniffer.transitions) {
-        expect(child.hasClass('ng-enter')).toBe(true);
-        $timeout.flushNext(0);
-        expect(child.hasClass('ng-enter-active')).toBe(true);
-      }
+      $rootScope.$digest();
 
       $timeout.flushNext(10);
 
       if($sniffer.transitions) {
-        expect(child.hasClass('ng-enter-active')).toBe(true);
         $timeout.flushNext(1000);
-        expect(child.hasClass('ng-enter')).toBe(false);
-        expect(child.hasClass('ng-enter-active')).toBe(false);
       }
 
       expect(child.hasClass('i-was-animated')).toBe(true);
@@ -1417,38 +1335,26 @@ describe("ngAnimate", function() {
       var child = $compile('<div>...</div>')($rootScope);
 
       $animate.enter(child, element);
-      $timeout.flushNext(0);
+      $rootScope.$digest();
 
       //this is added/removed right away otherwise
       if($sniffer.transitions) {
         expect(child.hasClass('ng-enter')).toBe(true);
-        $timeout.flushNext(0);
+        expect(child.hasClass('ng-enter-active')).toBe(true);
       }
 
       expect(child.hasClass('this-is-mine-now')).toBe(false);
       child.addClass('usurper');
       $animate.leave(child);
-      $timeout.flushNext(0);
+      $rootScope.$digest();
 
       expect(child.hasClass('ng-enter')).toBe(false);
       expect(child.hasClass('ng-enter-active')).toBe(false);
 
       expect(child.hasClass('usurper')).toBe(true);
       expect(child.hasClass('this-is-mine-now')).toBe(true);
-      if($sniffer.transitions) {
-        $timeout.flushNext(0);
-      }
 
       $timeout.flushNext(55);
-      if($sniffer.transitions) {
-        $timeout.flushNext(2000);
-
-        //even though this exists, the animation will still not happen
-        //since the done function has already been called in the cancellation
-        $timeout.flushNext(2000);
-      }
-
-      expect(child.hasClass('usurper-active')).toBe(false);
     });
   });
 
@@ -1572,15 +1478,12 @@ describe("ngAnimate", function() {
 
       $animate.addClass(element, 'super');
       expect(element.data('classify')).toBe('add-super');
-      $timeout.flush();
 
       $animate.removeClass(element, 'super');
       expect(element.data('classify')).toBe('remove-super');
-      $timeout.flush();
 
       $animate.addClass(element, 'superguy');
       expect(element.data('classify')).toBe('add-superguy');
-      $timeout.flush();
     });
   });
 
@@ -1600,7 +1503,6 @@ describe("ngAnimate", function() {
       jqLite(document.body).append($rootElement);
 
       $animate.addClass(element, 'super');
-      $timeout.flush(0);
 
       var empty = true;
       try {
